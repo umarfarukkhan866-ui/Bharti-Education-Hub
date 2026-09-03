@@ -39,7 +39,26 @@ body{background:#f3f6fb;color:#172033}
 .admin-table-wrap{overflow:auto;margin-top:12px}.admin-table{width:100%;border-collapse:collapse;min-width:720px}
 .admin-table th,.admin-table td{padding:10px;border-bottom:1px solid #e5e7eb;text-align:left}.admin-table th{background:#f8fafc}
 .small-btn{border:0;padding:7px 10px;border-radius:7px;color:white;cursor:pointer;font-weight:700;margin:2px}
-""</style>
+""
+/* ===== Community Photo Chat ===== */
+.chat-wrap{display:grid;grid-template-columns:1fr 300px;gap:18px}
+.chat-box{background:white;border-radius:18px;padding:18px;box-shadow:0 3px 15px rgba(0,0,0,.05)}
+.chat-messages{height:480px;overflow:auto;border:1px solid #e5e7eb;border-radius:14px;padding:14px;background:#f8fafc}
+.chat-message{display:flex;gap:10px;margin:10px 0;align-items:flex-start}
+.chat-avatar{width:38px;height:38px;border-radius:50%;background:#4f46e5;color:white;display:flex;align-items:center;justify-content:center;font-weight:bold;flex:0 0 auto}
+.chat-bubble{background:white;border:1px solid #e5e7eb;border-radius:12px;padding:9px 12px;max-width:78%;box-shadow:0 2px 7px rgba(0,0,0,.04)}
+.chat-meta{font-size:11px;color:#777;margin-bottom:4px}.chat-photo{display:block;max-width:260px;max-height:260px;border-radius:10px;margin-top:6px;cursor:pointer}
+.chat-form{display:flex;gap:8px;margin-top:10px;align-items:center}
+.chat-form input[type=text]{flex:1;padding:12px;border:1px solid #d7dce7;border-radius:10px}
+.photo-btn{border:0;padding:11px 13px;background:#eef2ff;color:#3730a3;border-radius:10px;cursor:pointer;font-weight:bold}
+.chat-send{margin-top:0!important}
+.chat-help{color:#777;font-size:12px;margin-top:7px}
+.online-list{max-height:480px;overflow:auto}
+.online-user{padding:10px;border-bottom:1px solid #eee;display:flex;gap:9px;align-items:center}
+.online-dot{width:9px;height:9px;border-radius:50%;background:#22c55e}
+@media(max-width:800px){.chat-wrap{grid-template-columns:1fr}.chat-messages{height:400px}}
+
+</style>
 </head>
 <body>
 
@@ -74,6 +93,7 @@ body{background:#f3f6fb;color:#172033}
 <button class="nav-btn" onclick="showSection('exam',this)">🎯 <span>Exam Preparation</span></button>
 <button class="nav-btn" onclick="showSection('quiz',this)">🧠 <span>Quiz Mode</span></button>
 <button class="nav-btn" onclick="showSection('questions',this)">❓ <span>Question Bank</span></button>
+<button class="nav-btn" onclick="showSection('chat',this);initChat()">💬 <span>Community Chat</span></button>
 <button id="adminNav" class="nav-btn" style="display:none" onclick="showSection('admin',this)">⚙️ <span>Admin Panel</span></button>
 <button class="nav-btn logout" onclick="logout()">🚪 <span>Logout</span></button>
 </aside>
@@ -149,6 +169,34 @@ body{background:#f3f6fb;color:#172033}
 <div class="card"><h3>Class 6–8</h3><p>Conceptual questions, numericals, science questions and social studies.</p></div>
 <div class="card"><h3>Class 9–10</h3><p>Board-style questions, important questions, numericals, long answers and mock practice.</p></div>
 </div>
+</section>
+
+
+<section id="chat" class="section">
+  <h1>💬 Community Photo Chat</h1>
+  <p style="color:#777;margin:8px 0 20px">
+    जो भी लोग इस वेबसाइट को खोलकर Chat में आए हैं, वे एक-दूसरे से संदेश और केवल फोटो शेयर कर सकते हैं।
+  </p>
+  <div class="chat-wrap">
+    <div class="chat-box">
+      <div id="chatMessages" class="chat-messages">
+        <p style="color:#777;text-align:center">Chat loading...</p>
+      </div>
+      <form class="chat-form" onsubmit="sendChatText(event)">
+        <input id="chatText" type="text" maxlength="500" placeholder="Message लिखें...">
+        <label class="photo-btn" title="Photo भेजें">📷 Photo
+          <input id="chatPhoto" type="file" accept="image/*" hidden onchange="sendChatPhoto(this)">
+        </label>
+        <button class="primary chat-send" type="submit">Send</button>
+      </form>
+      <div class="chat-help">📷 केवल image files भेजी जा सकती हैं। दूसरे file types स्वीकार नहीं होंगे।</div>
+    </div>
+    <div class="chat-box">
+      <h3>🟢 Active on this browser</h3>
+      <div id="chatUsers" class="online-list" style="margin-top:10px"></div>
+      <p class="chat-help">नोट: यह HTML-only version browser के localStorage से chat sync करता है। अलग-अलग devices/users के लिए real-time chat के लिए Firebase/Supabase जैसे online backend की जरूरत होगी।</p>
+    </div>
+  </div>
 </section>
 
 <section id="admin" class="section">
@@ -333,5 +381,94 @@ function renderAdminNotes(){
  box.innerHTML=extraNotes.length?extraNotes.map((n,i)=>`<div class="student-admin"><b>${escapeHtml(n.subject)} — ${escapeHtml(n.chapter)}</b><p>${escapeHtml(n.class)}</p><p>${escapeHtml(n.content).slice(0,250)}</p><div class="admin-actions"><button class="small-btn edit-btn" onclick="editNote(${i})">Edit</button><button class="small-btn delete-btn" onclick="deleteNote(${i})">Delete</button></div></div>`).join(""):"<p style='color:#777'>No admin-added notes yet.</p>";
 }
 window.onload=()=>{applyFeeOverrides();toggleLoginFields();loadNotes(1);renderStudents()};
+
+// ===== Community Photo Chat =====
+const CHAT_KEY="beh_community_chat_v1";
+const CHAT_USER_KEY="beh_chat_user_v1";
+
+function chatCurrentUser(){
+  const name=(document.getElementById("displayName")?.textContent||"Student").trim();
+  return name || "Student";
+}
+function initChat(){
+  renderChat();
+  renderChatUsers();
+}
+function readChat(){
+  try{return JSON.parse(localStorage.getItem(CHAT_KEY)||"[]")}catch(e){return []}
+}
+function writeChat(data){
+  // Keep the chat reasonably small for localStorage.
+  localStorage.setItem(CHAT_KEY,JSON.stringify(data.slice(-100)));
+}
+function renderChat(){
+  const box=document.getElementById("chatMessages"); if(!box)return;
+  const data=readChat();
+  if(!data.length){
+    box.innerHTML='<p style="color:#777;text-align:center">अभी कोई message नहीं है। पहला message/photo भेजें।</p>';
+    return;
+  }
+  box.innerHTML=data.map(m=>{
+    const safeName=escapeHtml(m.name||"Student");
+    const initial=escapeHtml((m.name||"S").charAt(0).toUpperCase());
+    const time=new Date(m.time||Date.now()).toLocaleString();
+    let body="";
+    if(m.type==="photo"){
+      body=`<img class="chat-photo" src="${m.data}" alt="Shared photo" onclick="window.open(this.src,'_blank')">`;
+    }else{
+      body=`<div>${escapeHtml(m.text||"")}</div>`;
+    }
+    return `<div class="chat-message"><div class="chat-avatar">${initial}</div><div class="chat-bubble"><div class="chat-meta"><b>${safeName}</b> · ${escapeHtml(time)}</div>${body}</div></div>`;
+  }).join("");
+  box.scrollTop=box.scrollHeight;
+}
+function renderChatUsers(){
+  const box=document.getElementById("chatUsers"); if(!box)return;
+  const names=[...new Set(readChat().map(x=>x.name).filter(Boolean))];
+  const current=chatCurrentUser();
+  if(!names.includes(current))names.unshift(current);
+  box.innerHTML=names.length?names.map(n=>`<div class="online-user"><span class="online-dot"></span><span>${escapeHtml(n)}</span></div>`).join("")
+    :'<p style="color:#777">No users yet.</p>';
+}
+function addChatMessage(m){
+  const data=readChat();
+  data.push(m);
+  writeChat(data);
+  renderChat();
+  renderChatUsers();
+}
+function sendChatText(e){
+  e.preventDefault();
+  const input=document.getElementById("chatText");
+  const value=input.value.trim();
+  if(!value)return;
+  addChatMessage({name:chatCurrentUser(),type:"text",text:value,time:Date.now()});
+  input.value="";
+}
+function sendChatPhoto(input){
+  const file=input.files && input.files[0];
+  if(!file)return;
+  if(!file.type.startsWith("image/")){
+    alert("केवल photo/image भेज सकते हैं।");
+    input.value="";
+    return;
+  }
+  if(file.size>2*1024*1024){
+    alert("Photo 2 MB से छोटी रखें।");
+    input.value="";
+    return;
+  }
+  const reader=new FileReader();
+  reader.onload=()=>{
+    addChatMessage({name:chatCurrentUser(),type:"photo",data:reader.result,time:Date.now()});
+    input.value="";
+  };
+  reader.readAsDataURL(file);
+}
+window.addEventListener("storage",e=>{
+  if(e.key===CHAT_KEY){renderChat();renderChatUsers();}
+});
+
 </script>
 </body>
+</html>
