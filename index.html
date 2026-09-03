@@ -32,7 +32,14 @@ body{background:#f3f6fb;color:#172033}
 .search{width:100%;max-width:450px;padding:13px;border:1px solid #ddd;border-radius:10px;margin:15px 0}
 @media(max-width:900px){.sidebar{width:75px}.brand h2,.brand p,.nav-btn span{display:none}.main{margin-left:75px}.stats{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:600px){.main{padding:12px}.stats{grid-template-columns:1fr}.admin-form{grid-template-columns:1fr}.topbar{flex-direction:column;gap:7px}}
-</style>
+
+.admin-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.edit-btn{background:#0f766e!important}.delete-btn{background:#dc2626!important}.secondary-btn{background:#475569!important}
+.fee{font-weight:700;color:#166534;margin-top:7px}
+.admin-table-wrap{overflow:auto;margin-top:12px}.admin-table{width:100%;border-collapse:collapse;min-width:720px}
+.admin-table th,.admin-table td{padding:10px;border-bottom:1px solid #e5e7eb;text-align:left}.admin-table th{background:#f8fafc}
+.small-btn{border:0;padding:7px 10px;border-radius:7px;color:white;cursor:pointer;font-weight:700;margin:2px}
+""</style>
 </head>
 <body>
 
@@ -93,13 +100,7 @@ body{background:#f3f6fb;color:#172033}
 <section id="students" class="section">
 <h1>Student Details</h1><p style="color:#777;margin-top:7px">Bharati Education Hub Students</p>
 <input id="studentSearch" class="search" placeholder="🔍 Search student..." onkeyup="searchStudents()">
-<div class="grid" id="studentGrid">
-<div class="card student" data-name="umar"><h3>👨‍🎓 Umar</h3><span class="badge">BAH</span><span class="badge">Master</span><span class="badge tick">✓</span><p><strong>Class:</strong> 7</p><p><strong>Subjects:</strong> Maths, Science, SST</p></div>
-<div class="card student" data-name="janaf"><h3>👨‍🎓 Janaf</h3><span class="badge">BAH</span><span class="badge">Master</span><span class="badge tick">✓</span><p><strong>Class:</strong> 9</p><p><strong>Subjects:</strong> Maths, Science, English</p></div>
-<div class="card student" data-name="afan"><h3>👨‍🎓 Afan</h3><span class="badge">BAH</span><span class="badge">Master</span><span class="badge tick">✓</span><p><strong>Class:</strong> 6</p><p><strong>Subjects:</strong> Maths, Science, Hindi</p></div>
-<div class="card student" data-name="ammar"><h3>👨‍🎓 Ammar</h3><span class="badge">BAH</span><span class="badge">Master</span><span class="badge tick">✓</span><p><strong>Class:</strong> 2</p><p><strong>Subjects:</strong> Maths, Hindi, English</p></div>
-<div class="card student" data-name="adiba"><h3>👩‍🎓 Adiba</h3><span class="badge">BAH</span><span class="badge">Master</span><span class="badge tick">✓</span><p><strong>Class:</strong> 5</p><p><strong>Subjects:</strong> Science, SST, English</p></div>
-</div>
+<div class="grid" id="studentGrid"></div>
 </section>
 
 <section id="notes" class="section">
@@ -152,17 +153,23 @@ body{background:#f3f6fb;color:#172033}
 
 <section id="admin" class="section">
 <h1>⚙️ Admin Panel</h1><p style="color:#777;margin:8px 0 20px">Manage students and educational content.</p>
-<div class="admin-box"><h2>➕ Add Student</h2><div class="admin-form" style="margin-top:15px">
-<input id="newStudentName" placeholder="Student Name"><select id="newStudentClass"><option value="">Select Class</option><option>Class 1</option><option>Class 2</option><option>Class 3</option><option>Class 4</option><option>Class 5</option><option>Class 6</option><option>Class 7</option><option>Class 8</option><option>Class 9</option><option>Class 10</option></select>
-<input id="newStudentSubjects" placeholder="Subjects e.g. Maths, Science" class="full"><button class="primary full" onclick="addStudent()">Add Student</button>
+<div class="admin-box"><h2>➕ Add / Edit Student</h2><div class="admin-form" style="margin-top:15px">
+<input type="hidden" id="editingStudentIndex" value="-1">
+<input id="newStudentName" placeholder="Student Name">
+<select id="newStudentClass"><option value="">Select Class</option><option>Class 1</option><option>Class 2</option><option>Class 3</option><option>Class 4</option><option>Class 5</option><option>Class 6</option><option>Class 7</option><option>Class 8</option><option>Class 9</option><option>Class 10</option></select>
+<input id="newStudentSubjects" placeholder="Subjects e.g. Maths, Science" class="full">
+<input id="newStudentFee" type="number" min="0" placeholder="Tuition Fee (₹)">
+<div class="admin-actions full"><button class="primary" onclick="saveStudent()">Save Student</button><button class="primary secondary-btn" onclick="cancelStudentEdit()">Clear</button></div>
 </div></div>
-<div class="admin-box"><h2>📝 Add Note</h2><div class="admin-form" style="margin-top:15px">
+<div class="admin-box"><h2>📝 Add / Edit Note</h2><div class="admin-form" style="margin-top:15px">
+<input type="hidden" id="editingNoteIndex" value="-1">
 <select id="noteClass"><option>Class 1</option><option>Class 2</option><option>Class 3</option><option>Class 4</option><option>Class 5</option><option>Class 6</option><option>Class 7</option><option>Class 8</option><option>Class 9</option><option>Class 10</option></select>
 <select id="noteSubject"><option>Maths</option><option>Science</option><option>SST</option><option>Hindi</option><option>English</option></select>
 <input id="noteChapter" placeholder="Chapter Name"><textarea id="noteContent" placeholder="Write complete chapter notes..." class="full"></textarea>
-<button class="primary full" onclick="addNote()">Add Note</button>
+<div class="admin-actions full"><button class="primary" onclick="saveNote()">Save Note</button><button class="primary secondary-btn" onclick="cancelNoteEdit()">Clear</button></div>
 </div></div>
-<div class="admin-box"><h2>👨‍🎓 Added Students</h2><div id="adminStudents"></div></div>
+<div class="admin-box"><h2>👨‍🎓 Manage All Students</h2><div id="adminStudents"></div></div>
+<div class="admin-box"><h2>📝 Manage Added Notes</h2><div id="adminNotesList"></div></div></div>
 </section>
 </main>
 </div>
@@ -181,8 +188,18 @@ const notes={
 10:[["Maths","Real Numbers","Real numbers include rational and irrational numbers. Learn Euclid's division algorithm and prime factorisation."],["Science","Chemical Reactions","Chemical reactions involve rearrangement of atoms. Learn combination, decomposition, displacement, oxidation and reduction."],["SST","Nationalism in India","Study major events, movements, leaders and their significance in the Indian national movement."],["Hindi","परीक्षा Revision","काव्य, गद्य, व्याकरण, लेखन और पाठ आधारित प्रश्नों की नियमित revision परीक्षा में आवश्यक है।"],["English","Board Exam Grammar","Focus on tenses, modals, reported speech, subject-verb agreement, editing, omission and writing skills."]]
 };
 
+const DEFAULT_STUDENTS=[
+{name:"Umar",class:"Class 7",subjects:"Maths, Science, SST",fee:500},
+{name:"Janaf",class:"Class 9",subjects:"Maths, Science, English",fee:0},
+{name:"Afan",class:"Class 6",subjects:"Maths, Science, Hindi",fee:150},
+{name:"Ammar",class:"Class 2",subjects:"Maths, Hindi, English",fee:500},
+{name:"Adiba",class:"Class 5",subjects:"Science, SST, English",fee:400}
+];
 let students=JSON.parse(localStorage.getItem("beh_students")||"[]");
 let extraNotes=JSON.parse(localStorage.getItem("beh_notes")||"[]");
+function allStudents(){return [...DEFAULT_STUDENTS,...students]}
+function saveStudents(){localStorage.setItem("beh_students",JSON.stringify(students))}
+function applyFeeOverrides(){const o=JSON.parse(localStorage.getItem("beh_fee_overrides")||"{}");DEFAULT_STUDENTS.forEach(s=>{if(o[s.name]!==undefined)s.fee=Number(o[s.name])})}
 
 function toggleLoginFields(){
     const admin=document.getElementById("loginType").value==="admin";
@@ -211,8 +228,11 @@ function login(){
 function openApp(){
     document.getElementById("loginPage").style.display="none";
     document.getElementById("app").style.display="block";
+    applyFeeOverrides();
     loadNotes(1);
+    renderStudents();
     renderAdminStudents();
+    renderAdminNotes();
 }
 function logout(){
     document.getElementById("app").style.display="none";
@@ -228,7 +248,7 @@ function showSection(id,btn){
     document.getElementById(id).classList.add("active");
     document.querySelectorAll(".nav-btn").forEach(b=>b.classList.remove("active"));
     if(btn)btn.classList.add("active");
-    if(id==="admin")renderAdminStudents();
+    if(id==="admin"){renderAdminStudents();renderAdminNotes();}
 }
 function searchStudents(){
     const value=document.getElementById("studentSearch").value.toLowerCase();
@@ -255,37 +275,63 @@ function checkQuiz(){
     if(!answer){result.textContent="Please select an answer.";return}
     result.textContent=answer.value==="60"?"✓ Correct! 12 × 5 = 60. Excellent!":"✗ Incorrect. Try again and revise multiplication.";
 }
-function addStudent(){
-    const name=document.getElementById("newStudentName").value.trim();
-    const cls=document.getElementById("newStudentClass").value;
-    const subjects=document.getElementById("newStudentSubjects").value.trim();
-    if(!name||!cls){alert("Please enter student name and class.");return}
-    students.push({name,class:cls,subjects:subjects||"General Subjects"});
-    localStorage.setItem("beh_students",JSON.stringify(students));
-    document.getElementById("newStudentName").value="";
-    document.getElementById("newStudentClass").value="";
-    document.getElementById("newStudentSubjects").value="";
-    renderAdminStudents();alert("Student added successfully!");
+function renderStudents(){
+ const grid=document.getElementById("studentGrid"); if(!grid)return;
+ const q=(document.getElementById("studentSearch")?.value||"").toLowerCase();
+ grid.innerHTML=allStudents().filter(s=>s.name.toLowerCase().includes(q)).map((s,i)=>{
+  const custom=i>=DEFAULT_STUDENTS.length, j=i-DEFAULT_STUDENTS.length;
+  return `<div class="card student"><h3>${s.name.toLowerCase()==="adiba"?"👩‍🎓":"👨‍🎓"} ${escapeHtml(s.name)}</h3>
+  <span class="badge">BAH</span><span class="badge">Master</span><span class="badge tick">✓</span>
+  <p><strong>Class:</strong> ${escapeHtml(s.class)}</p><p><strong>Subjects:</strong> ${escapeHtml(s.subjects||"General Subjects")}</p>
+  <p class="fee"><strong>Tuition Fee:</strong> ₹${Number(s.fee||0)}</p>
+  ${isAdmin()&&custom?`<div class="admin-actions"><button class="primary edit-btn" onclick="editStudent(${j})">Edit</button><button class="primary delete-btn" onclick="deleteStudent(${j})">Delete</button></div>`:""}
+  </div>`}).join("")||'<div class="card"><p>No student found.</p></div>';
 }
+function isAdmin(){return document.getElementById("displayName")?.textContent==="Administrator"}
+function searchStudents(){renderStudents()}
+
+function saveStudent(){
+ const name=document.getElementById("newStudentName").value.trim(), cls=document.getElementById("newStudentClass").value;
+ const subjects=document.getElementById("newStudentSubjects").value.trim()||"General Subjects";
+ const fee=Math.max(0,Number(document.getElementById("newStudentFee").value||0)), idx=Number(document.getElementById("editingStudentIndex").value);
+ if(!name||!cls){alert("Please enter student name and class.");return}
+ const s={name,class:cls,subjects,fee}; if(idx>=0)students[idx]=s;else students.push(s);
+ saveStudents();cancelStudentEdit();renderStudents();renderAdminStudents();alert(idx>=0?"Student updated successfully!":"Student added successfully!");
+}
+function editStudent(i){
+ const s=students[i];if(!s)return;
+ editingStudentIndex.value=i;newStudentName.value=s.name;newStudentClass.value=s.class;newStudentSubjects.value=s.subjects||"";newStudentFee.value=s.fee||0;
+ showSection("admin",adminNav);
+}
+function cancelStudentEdit(){editingStudentIndex.value="-1";newStudentName.value="";newStudentClass.value="";newStudentSubjects.value="";newStudentFee.value=""}
+function deleteStudent(i){if(!students[i])return;if(!confirm("Delete this student?"))return;students.splice(i,1);saveStudents();renderAdminStudents();renderStudents()}
+
 function renderAdminStudents(){
-    const box=document.getElementById("adminStudents");if(!box)return;
-    box.innerHTML="";
-    if(!students.length){box.innerHTML="<p style='color:#777'>No additional students added yet.</p>";return}
-    students.forEach((s,i)=>box.innerHTML+=`<div class="student-admin"><strong>${escapeHtml(s.name)}</strong><p>${escapeHtml(s.class)} • ${escapeHtml(s.subjects)}</p><button class="primary" onclick="deleteStudent(${i})">Delete</button></div>`);
+ const box=document.getElementById("adminStudents");if(!box)return;
+ box.innerHTML='<div class="admin-table-wrap"><table class="admin-table"><thead><tr><th>Name</th><th>Class</th><th>Subjects</th><th>Tuition Fee</th><th>Action</th></tr></thead><tbody>'+
+ allStudents().map((s,i)=>{let custom=i>=DEFAULT_STUDENTS.length,j=i-DEFAULT_STUDENTS.length;
+ return `<tr><td><b>${escapeHtml(s.name)}</b></td><td>${escapeHtml(s.class)}</td><td>${escapeHtml(s.subjects||"")}</td><td>₹${Number(s.fee||0)}</td><td>${custom?`<button class="small-btn edit-btn" onclick="editStudent(${j})">Edit</button><button class="small-btn delete-btn" onclick="deleteStudent(${j})">Delete</button>`:`<button class="small-btn edit-btn" onclick="editDefaultFee(${i})">Edit Fee</button>`}</td></tr>`}).join("")+
+ '</tbody></table></div>';
 }
-function deleteStudent(i){
-    if(!confirm("Delete this student?"))return;
-    students.splice(i,1);localStorage.setItem("beh_students",JSON.stringify(students));renderAdminStudents();
+function editDefaultFee(i){
+ const s=DEFAULT_STUDENTS[i],v=prompt("Enter tuition fee for "+s.name,s.fee);
+ if(v===null)return;const fee=Number(v);if(!Number.isFinite(fee)||fee<0){alert("Invalid fee.");return}
+ const o=JSON.parse(localStorage.getItem("beh_fee_overrides")||"{}");o[s.name]=fee;localStorage.setItem("beh_fee_overrides",JSON.stringify(o));s.fee=fee;renderStudents();renderAdminStudents();
 }
-function addNote(){
-    const cls=document.getElementById("noteClass").value,subject=document.getElementById("noteSubject").value,chapter=document.getElementById("noteChapter").value.trim(),content=document.getElementById("noteContent").value.trim();
-    if(!chapter||!content){alert("Please enter chapter and note content.");return}
-    extraNotes.push({class:cls,subject,chapter,content});
-    localStorage.setItem("beh_notes",JSON.stringify(extraNotes));
-    document.getElementById("noteChapter").value="";document.getElementById("noteContent").value="";
-    alert("Note added successfully!");
+
+function saveNote(){
+ const cls=noteClass.value,subject=noteSubject.value,chapter=noteChapter.value.trim(),content=noteContent.value.trim(),idx=Number(editingNoteIndex.value);
+ if(!chapter||!content){alert("Please enter chapter and note content.");return}
+ const n={class:cls,subject,chapter,content};if(idx>=0)extraNotes[idx]=n;else extraNotes.push(n);
+ localStorage.setItem("beh_notes",JSON.stringify(extraNotes));cancelNoteEdit();renderAdminNotes();loadNotes(Number(cls.replace("Class ","")));alert(idx>=0?"Note updated successfully!":"Note added successfully!");
 }
-window.onload=()=>{toggleLoginFields();loadNotes(1)};
+function editNote(i){const n=extraNotes[i];if(!n)return;editingNoteIndex.value=i;noteClass.value=n.class;noteSubject.value=n.subject;noteChapter.value=n.chapter;noteContent.value=n.content;showSection("admin",adminNav)}
+function cancelNoteEdit(){editingNoteIndex.value="-1";noteChapter.value="";noteContent.value=""}
+function deleteNote(i){if(!extraNotes[i])return;if(!confirm("Delete this note?"))return;extraNotes.splice(i,1);localStorage.setItem("beh_notes",JSON.stringify(extraNotes));renderAdminNotes();loadNotes(1)}
+function renderAdminNotes(){
+ const box=document.getElementById("adminNotesList");if(!box)return;
+ box.innerHTML=extraNotes.length?extraNotes.map((n,i)=>`<div class="student-admin"><b>${escapeHtml(n.subject)} — ${escapeHtml(n.chapter)}</b><p>${escapeHtml(n.class)}</p><p>${escapeHtml(n.content).slice(0,250)}</p><div class="admin-actions"><button class="small-btn edit-btn" onclick="editNote(${i})">Edit</button><button class="small-btn delete-btn" onclick="deleteNote(${i})">Delete</button></div></div>`).join(""):"<p style='color:#777'>No admin-added notes yet.</p>";
+}
+window.onload=()=>{applyFeeOverrides();toggleLoginFields();loadNotes(1);renderStudents()};
 </script>
 </body>
-</html>
